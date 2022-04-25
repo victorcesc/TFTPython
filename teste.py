@@ -1,18 +1,16 @@
-first = 0b01010101
-second = 0b11110000
+from message import Message
 
 
-teste = 1
-opcode = b'0000000000000001'
-
-#concatenar bytes
-
+#simulando WRQ
+message = bytearray()
+message.append(0)
+message.append(1)
+opcode = message
 buffer = bytearray()
-buffer += opcode
 buffer += 'filename'.encode('ascii')
-#b += filename.encode('ascii')
 buffer.append(0)
 buffer += 'mode'.encode('ascii')
 buffer.append(0)
-
-print(buffer)
+print(buffer.decode('ascii'))
+##teste = Message(opcode,buffer)
+##print(Message.serialize(teste))

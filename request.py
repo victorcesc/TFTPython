@@ -1,16 +1,21 @@
-from .message import message
+from message import Message
 
 
-teste = message(b'0000000000000001',b'0000000000001')
-
-
-
-
-# class Request(Message):
-#     def __init__(self,opcode,buffer,filename,mode):
-#         super().__init__(opcode,buffer)
-#         self.filename = filename
-#         self.mode = mode
+#opcode 1 = RRQ
+#opcode 2 = WRQ
+class Request(Message):
+    def __init__(self,opcode,buffer,filename,mode):
+        super().__init__(opcode,buffer)
+        if(isinstance(filename, str) & isinstance(mode,str)):
+            self.filename = filename.encode('ascii')
+            if mode.lower() == "netascii" :
+                #traduzir os dados para netascii
+                self.mode = mode.encode('ascii')
+        else:
+            print("filename e mode precisam ser string!!")
+        
+        
+        
 
        
         
