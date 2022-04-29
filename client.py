@@ -1,13 +1,12 @@
-import * from TftpHandler
+from ClientTFTP import ClientTFTP
 
-ip = '127.0.0.1'
-port = '69'
+IP = '127.0.0.1'
+PORT = 5005
+MESSAGE = b"Jhonatan"
 
-cliente = TftpHandler(ip,port)
+cliente = ClientTFTP(IP, PORT)
 
-TftpHandler.sendBlock('nomedoarq.teste' , b'12312412\n')
+cliente.send(MESSAGE)
 
-#no tftp preciso saber o arquivo la no 
-# servidor para poder recebe-lo no client
-
-dados = TftpHandler.receive('nomedoarquivo.exemplo')
+data = cliente.recv()
+print("resposta do servidor: %s" % data)
