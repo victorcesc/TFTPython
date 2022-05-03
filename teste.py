@@ -1,5 +1,8 @@
+import struct
 from message import Message
 from request import Request
+from data import Data
+
 
 
 #simulando WRQ
@@ -32,6 +35,16 @@ message = Message(buffer)
 # print(message.serialize())
 request = Request(2,'teste.txt','NetAscii')
 print(request.serialize())
+
+file = open("mesg_demos/data","rb")
+print(file.read())
+
+
+block = 250
+block = struct.pack(">H",block)
+
+data = Data(3,block,"VICTOR CESCONETTO DE PIERI 1233525 4WFSEJKJSFELFKSLFJK JKSE FKSE".encode('ascii'))
+print(data.serialize())
 
 
 ##teste = Message(opcode,buffer)
