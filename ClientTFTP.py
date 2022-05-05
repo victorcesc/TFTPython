@@ -1,18 +1,16 @@
-from socket import *
+import socket
 from request import Request
-from .pypoller import poller #import pode estar errado
+from pypoller import poller #import pode estar errado
 
 
 class ClientTFTP(poller.Callback):
 
-    def __init__(self,ip:str, port:int , tout:float):
+    def __init__(self, ip:str, port:int , tout:float):
         self.server = ip
         self.port = port        
-        self._sock = socket(AF_INET, SOCK_DGRAM)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         poller.Callback.__init__(self,self._sock, tout)
         self._state_handler = None
-        
-        
 
     def envia(self, nomearq:str, mode:str):
         msg = Request(2,nomearq,mode)
@@ -27,12 +25,6 @@ class ClientTFTP(poller.Callback):
         self._state_handler = self.handle_tx0
         sched.adiciona(self)
         sched.despache()
-
-
-    def __init__(self, ip, port):
-        self.ip = ip
-        self.port = port
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def handle_tx0(self,msg,timeout:bool=False):
         #msg = msg recebida do handler do poller q foi enviada pelo server
@@ -60,18 +52,8 @@ class ClientTFTP(poller.Callback):
         data, addr = self._sock.recvfrom(512)
         self._state_handler(data)
         
-
     def handle_timeout(self):
         self._state_handler(None,True)
-        
-
-    
-
-    def send(self, bytes):                
-        try:
-            self.client.sendto(bytes, (self.ip, self.port))
-        except Exception as e:
-            print('Erro ao enviar')
 
     def recv(self):
         try:

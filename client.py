@@ -2,11 +2,13 @@ from ClientTFTP import ClientTFTP
 
 IP = '127.0.0.1'
 PORT = 5005
-MESSAGE = b"Jhonatan"
+TIMEOUT = 10
+NOME_ARQUIVO = "host"
+MODE = "netascii"
 
-cliente = ClientTFTP(IP, PORT)
+cliente = ClientTFTP(IP, PORT, TIMEOUT)
 
-cliente.send(MESSAGE)
+cliente.envia(NOME_ARQUIVO, MODE)
 
 data = cliente.recv()
 print("resposta do servidor: %s" % data)
