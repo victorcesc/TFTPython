@@ -1,3 +1,4 @@
+import sys
 from message import Message
 
 
@@ -7,6 +8,7 @@ class Data(Message):
         super().__init__(opcode)
         self.block = block
         self.data = data
+
 
     def serialize(self):
         serial = bytearray()

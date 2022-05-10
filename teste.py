@@ -1,4 +1,6 @@
+import os
 import struct
+import sys
 from message import Message
 from request import Request
 from data import Data
@@ -37,14 +39,28 @@ request = Request(2,'teste.txt','NetAscii')
 print(request.serialize())
 
 file = open("mesg_demos/data","rb")
-print(file.read())
+#print(file.read(512))
+print(os.path.getsize("mesg_demos/data"))
+
+pt = file.read(200)
+pt2 = file.read(200)
+pt3 = file.read(200)
 
 
-block = 250
+
+
+
+block = 1000
 block = struct.pack(">H",block)
 
 data = Data(3,block,"VICTOR CESCONETTO DE PIERI 1233525 4WFSEJKJSFELFKSLFJK JKSE FKSE".encode('ascii'))
-print(data.serialize())
+
+test = data.serialize()
+print(test)
+
+print(type(test[2]))
+
+print(sys.getsizeof(data.serialize()))
 
 
 ##teste = Message(opcode,buffer)
