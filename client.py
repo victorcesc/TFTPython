@@ -11,4 +11,7 @@ cliente = ClientTFTP(IP, PORT, TIMEOUT)
 cliente.envia(NOME_ARQUIVO, MODE)
 
 data = cliente.recv()
+
+print(type(data))
+
 print("resposta do servidor: %s" % data)

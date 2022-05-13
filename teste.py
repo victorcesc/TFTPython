@@ -42,25 +42,30 @@ file = open("mesg_demos/data","rb")
 #print(file.read(512))
 print(os.path.getsize("mesg_demos/data"))
 
-pt = file.read(200)
-pt2 = file.read(200)
+pt = file.read(516)
+pt2 = file.read(350)
 pt3 = file.read(200)
 
 
+print("opa: ")
+print(pt)
 
 
+if pt3:
+    print("receba")
 
-block = 1000
+block = 127
 block = struct.pack(">H",block)
 
-data = Data(3,block,"VICTOR CESCONETTO DE PIERI 1233525 4WFSEJKJSFELFKSLFJK JKSE FKSE".encode('ascii'))
+data = Data(3,block,"VICTOR CESCONETTO DE PIERI 1233525 4WFSEJKJSFELFKSLFJK JKSE FKSE".encode())
 
 test = data.serialize()
 print(test)
 
-print(type(test[2]))
+#print(type(test[2]))
 
-print(sys.getsizeof(data.serialize()))
+#print(sys.getsizeof(data.serialize()))
+
 
 
 ##teste = Message(opcode,buffer)

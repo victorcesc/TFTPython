@@ -1,0 +1,41 @@
+localhost
+localhost
+191.36.8.55	lased
+191.36.8.55	inet.sj.ifsc.edu.br	inet
+191.36.9.247     opiap
+192.168.10.235  mk
+192.168.10.234  base
+10.1.10.200  baseac
+10.1.20.200  clienteac
+10.1.10.1  wom1ac # base
+10.1.20.1  wom2ac #cliente
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+10.0.10.20 cliente1
+10.0.20.20 cliente2
+10.0.30.20 cliente3
+10.0.40.20 cliente4
+10.0.50.20 cliente5
+10.0.60.20191.36.8.55	lased
+191.36.8.55	inet.sj.ifsc.edu.br	inet
+191.36.9.247     opiap
+192.168.10.235  mk
+192.168.10.234  base
+10.1.10.200  baseac
+10.1.20.200  clienteac
+10.1.10.1  wom1ac # base
+10.1.20.1  wom2ac #cliente
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+10.0.10.20 cliente1
+10.0.20.20 cliente2
+10.0.30.20 cliente3
+10.0.40.20 cliente4
+10.0.50.20 cliente5
+10.0.60.20
