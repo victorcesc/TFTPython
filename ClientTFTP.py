@@ -39,43 +39,47 @@ class ClientTFTP(poller.Callback):
 
     def handle_rx0(self,msg,timeout:bool=False):
         
-         # n = bloco 
+         # n = bloco         
         self.n = 1                
-        self.msg_size = sys.getsizeof( msg )
+        msg_size = sys.getsizeof( msg )
+        print(msg_size)
         print("recebido do server %s" % msg)
         # self.max_n = 1 + self.msg_size/512
-        if self.msg_size < 512:             
+        if msg_size < 512:             
             block_n = struct.pack(">H",self.n)
             ack = Ack(4,block_n)
-            self._sock.sendto(ack.serialize(),(self.ip,self.port))                  
+            self._sock.sendto(ack.serialize(),(self.ip,self.port)) 
+            self.n = self.n + 1                 
             self._state_handler = self.handle_rx2
-        elif self.msg_size == 512:
+        elif msg_size >= 512:
             block_n = struct.pack(">H",self.n)
             ack = Ack(4,block_n)
             self._sock.sendto(ack.serialize(),(self.ip,self.port))
-            self._state_handler = self.handle_rx1         
+            self.n = self.n + 1
+            self._state_handler = self.handle_rx1       
         else:
             self._state_handler = self.handle_timeout
 
-         #proximo estado
 
     def handle_rx1(self,msg,timeout:bool=False):
-        if self.msg_size == 512:
-            self.n = struct.pack(">H",0)
-            ack = Ack(4,self.n)
+        msg_size = sys.getsizeof( msg )
+        if msg_size >= 512:
+            block_n = struct.pack(">H",self.n)
+            ack = Ack(4,block_n)            
             self._sock.sendto(ack.serialize(),(self.ip,self.port))
+            self.n = self.n + 1
         else:
             self._state_handler = self.handle_rx2 #proximo estado
 
     def handle_rx2(self,msg,timeout:bool=False):
        # timer = 0
-       # if msg = Data       
-        if self.msg_size < 512:             
-            self.n = struct.pack(">H",0)
-            ack = Ack(4,self.n)
+       # if msg = Data      
+        msg_size = sys.getsizeof( msg ) 
+        if msg_size < 512:             
+            block_n = struct.pack(">H",self.n)
+            ack = Ack(4,block_n)
             self._sock.sendto(ack.serialize(),(self.ip,self.port))
-        else:
-            self._state_handler = self.handle_timeout    
+            self._state_handler = self.handle_timeout
         
 
     def handle(self):
@@ -84,32 +88,7 @@ class ClientTFTP(poller.Callback):
         data, addr = self._sock.recvfrom(512)
         self._state_handler(data)
         
-    def handle_timeout(self):
+    def handle_timeout(self): 
+        self.disable_timeout()
+        self.disable()       
         self._state_handler(None,True)
-
-    def recv(self):
-        try:
-            data, addr = self.client.recvfrom(512)
-            print("received message: %s" % data)
-        except Exception as e:
-            print('Erro ao receber')
-
-        return data
-
-        # if arq.length < 512:
-        #     return "TERMINATE" 
-        # else:
-        #     print("Recebidos : %s " % (dados.encode()))
-        #     return "ACK"
-
-#     @staticmethod
-#     def cria_com_buffer(buffer):
-#         # faz algo
-#         return Teste(...)
-    
-#     @staticmethod
-#     def cria_com_args(buffer):
-#         # faz algo
-#         return Teste(...)
-
-# obj = Teste.cria_com_buffer(...)
