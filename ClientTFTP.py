@@ -20,12 +20,13 @@ class ClientTFTP(poller.Callback):
         self.msg_size = 0
         self.mode = None
         self.datafile = None
-        
 
     def envia(self, nomearq:str, mode:str):
         msg = Request(1,nomearq,mode)  #RRQ
         self.mode = mode 
-        self.datafile = nomearq    
+        self.datafile = nomearq
+        # cria o arquivo para escrita de bytes
+        self.file = open("./"+self.datafile, "wb")  
         self._sock.sendto(msg.serialize(),(self.ip,self.port))        
         self.enable()
         self.enable_timeout()
@@ -38,7 +39,6 @@ class ClientTFTP(poller.Callback):
         sched.despache()
 
     def handle_rx0(self,msg,timeout:bool=False):
-        
          # n = bloco         
         self.n = 1                
         msg_size = sys.getsizeof( msg )
@@ -80,12 +80,16 @@ class ClientTFTP(poller.Callback):
             ack = Ack(4,block_n)
             self._sock.sendto(ack.serialize(),(self.ip,self.port))
             self._state_handler = self.handle_timeout
+            #fecha o arquivo
+            self.file.close()
         
 
     def handle(self):
         # logica do cliente tftp maquina de estados e etc
         # recebe mensagem do socket
         data, addr = self._sock.recvfrom(512)
+        # escrevendo no arquivo
+        self.file.write(data)
         self._state_handler(data)
         
     def handle_timeout(self): 
