@@ -1,8 +1,9 @@
 import socket
 import struct
-import sys
+
 
 from data import Data
+from request import Request
 
 
 UDP_IP = "127.0.0.1"
@@ -23,29 +24,33 @@ f.write(dados)
 f.close()
 
 f2 = open("mesg_demos/teste","rb")
+
 b = 1
+rrq = Request(2,'host','netascii')
+rrq = rrq.serialize()
+# sock.sendto(rrq, (UDP_IP,UDP_PORT))
+
+# data_r, addr = sock.recvfrom(512)
+# print("received message: %s" % data_r)
+
 while True:
     
-    data, addr = sock.recvfrom(512) # buffer size is 1024 bytes
-    print("received message: %s" % data)
+    data_r, addr = sock.recvfrom(512) # buffer size is 1024 bytes
+    print("received message: %s" % data_r)
+    print(addr)
     
     dados = f2.read(512)
     block = struct.pack(">H",b)    
-    data  = Data(3,block,dados)
-    print(sys.getsizeof(block))
-    data = data.serialize()
-    print(sys.getsizeof(data))
-    print("enviando %s" % data)
+    data_t  = Data(3,block,dados) #ack
+    data_t = data_t.serialize()
+    print(len(data_t))
+    
     b = b + 1
-    if dados:   
-        sock.sendto(data, addr)
+    if dados:  
+        print("enviando %s" % data_t) 
+        sock.sendto(data_t, addr)
     else :
         print("Arquivo acabou")
         b = 0
- # recebe uma mensagem tipo ?ACK_0 / !DATA_N
-        # if msg[1] == 4:
-        #     if self.mode == 'NetAscii':
-        #         f = open(self.datafile)
-        #         max_n = self.max_n
-        #         while max_n > 1:
-        #             data = Data(3,self.n,f.read(512))
+        break
+ 
