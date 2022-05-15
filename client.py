@@ -8,7 +8,7 @@ MODE = "netascii"
 
 cliente = ClientTFTP(IP, PORT, TIMEOUT)
 
-cliente.envia(NOME_ARQUIVO, MODE)
+cliente.recebe(NOME_ARQUIVO, MODE)
 
 #cliente.handle()
 

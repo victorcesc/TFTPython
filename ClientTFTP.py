@@ -1,3 +1,4 @@
+import os
 from socket import *
 import struct
 from ack import Ack
@@ -20,16 +21,17 @@ class ClientTFTP(poller.Callback):
         self.mode = None
         self.datafile = None
 
-    def envia(self, nomearq:str, mode:str):
+    def recebe(self,nomearq:str, mode:str):
         msg = Request(1,nomearq,mode)  #RRQ
         self.mode = mode 
         self.datafile = nomearq
+        self.n = 1
         # cria o arquivo para escrita de bytes
         self.file = open("./"+self.datafile, "wb")  
         self._sock.sendto(msg.serialize(),(self.ip,self.port))        
         self.enable()
         self.enable_timeout()
-
+        
         sched = poller.Poller()
 
         #maquina de estados
@@ -37,10 +39,30 @@ class ClientTFTP(poller.Callback):
         sched.adiciona(self)
         sched.despache()
 
+    def envia(self,nomearq:str,mode:str):
+        msg = Request(2,nomearq,mode) #WRQ
+        self.mode = mode 
+        self.datafile = nomearq
+        self.n = 1
+        # cria o arquivo para escrita de bytes
+        self.file = open("./"+self.datafile, "rb")
+        size = os.path.getsize(self.file)
+        print(size)
+        self.max_n = 1 + size/512 
+        self._sock.sendto(msg.serialize(),(self.ip,self.port))        
+        self.enable()
+        self.enable_timeout()
+        
+        sched = poller.Poller()
+
+        #maquina de estados
+        self._state_handler = self.handle_tx0
+        sched.adiciona(self)
+        sched.despache()
+
     def handle_rx0(self,msg,timeout:bool=False):
          # n = bloco         
-        self.n = 1 
-        
+         
         msg_size = len( msg )
 
         if msg_size < 512:            
@@ -57,7 +79,6 @@ class ClientTFTP(poller.Callback):
             self._state_handler = self.handle_rx1       
         else:
             self._state_handler = self.handle_timeout
-
 
     def handle_rx1(self,msg,timeout:bool=False):
         
@@ -84,11 +105,11 @@ class ClientTFTP(poller.Callback):
                 self._state_handler = self.handle_timeout
     
                 
+                  
+    def handle_tx0(self,msg,timeout:bool = False):
         
-    
-            
-    def handle_tx0(self):
         pass
+        
 
 
 
@@ -106,16 +127,16 @@ class ClientTFTP(poller.Callback):
         if opcode == 1: #WRQ                        
             self._state_handler = self.handle_tx0     
         if opcode == 2: #RRQ             
-            self._state_handler(msg)            
+            self._state_handler = self.handle_rx0(msg)            
         if opcode == 3:
             msg = data[4:516]                   
             if msg != None:           
                 print("recebido do server %s" % msg)  
                 self.file.write(msg)          
-                self._state_handler(msg)
+                self._state_handler = self.handle_rx0(msg)
             else:
                 print("teste")
-                self._state_handler = self.handle_timeout
+                self._state_handler = self.handle_timeout(msg)
         
         
         
@@ -123,4 +144,4 @@ class ClientTFTP(poller.Callback):
     def handle_timeout(self): 
         self.disable_timeout()
         self.disable()       
-        self._state_handler(None,True)
+        self._state_handler = self.handle_timeout

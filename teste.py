@@ -74,6 +74,8 @@ server_f = open("host","rb")
 
 s = server_f.read()
 
+size = os.path.getsize("host")
+print(size)
 print(s.decode() == dados.decode())
 
 
