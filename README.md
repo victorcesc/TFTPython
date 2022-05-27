@@ -48,3 +48,6 @@ opcode | código de erro | mensagem de erro | 0
 
 ### Funcionamento
 
+Cria-se o arquivo de teste, cria-se a instancia do "ClientTFTP" passando IP(string), port(int) e valor do timeout em segundos. O metodo recebe implementa a chamada com o RRQ(Read Request do TFTP) para o recebimento de um arquivo do servidor e o metodo envia implementa a chamada com o WRQ(Write Request do TFTP) para a escrita do arquivo em um servidor.
+
+Para executar o programa teste de esboço (test.py) basta executar "python3 teste.py <endereco_IP> <porta> <timeout> <nome_do_arquivo> <modo_envio(1-RRQ 2-WRQ)>
