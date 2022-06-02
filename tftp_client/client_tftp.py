@@ -120,13 +120,18 @@ class ClientTFTP(poller.Callback):
         ack_n = msg[2:4]
         ack_n = int.from_bytes(ack_n)
         # if ack_n and self.n < (self.max_n - 1):
-        if ack_n == self.n and self.n < (self.max_n - 1):
+        if ack_n == self.n and (self.n < (self.max_n - 1)):
             self.n = self.n + 1
             dados = self.file.read(512)
             block_n = struct.pack(">H",self.n)
             data_t = Data(3,block_n,dados)
             self._sock.sendto(data_t.serialize(),(self.ip,self.port))
         elif ack_n and (self.n == (self.max_n - 1)):
+            self.n = self.n + 1
+            dados = self.file.read(512)
+            block_n = struct.pack(">H",self.n)
+            data_t = Data(3,block_n,dados)
+            self._sock.sendto(data_t.serialize(),(self.ip,self.port))
             self._state_handler = self.handle_tx2
 
         
@@ -146,9 +151,7 @@ class ClientTFTP(poller.Callback):
         data, addr = self._sock.recvfrom(516) #512 + opcode e blockN     
         # escrevendo no arquivo        
         opcode = data[0:2]
-        opcode = int.from_bytes(opcode, "big") 
-        print(opcode)
-        print(self._state_handler)       
+        opcode = int.from_bytes(opcode, "big")     
         if opcode == 3:
             msg = data[4:516]                            
             if msg != None:    
