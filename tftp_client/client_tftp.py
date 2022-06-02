@@ -21,7 +21,6 @@ class ClientTFTP(poller.Callback):
         self.mode = None
         self.datafile = None
 
-    #modo que recebe o arquivo ReadRequest
     def recebe(self,nomearq:str, mode:str):
         msg = Request(1,nomearq,mode)  #RRQ
         self.mode = mode 
@@ -38,7 +37,6 @@ class ClientTFTP(poller.Callback):
         sched.adiciona(self)
         sched.despache()
 
-    #modo que envia o arquivo WriteRequest
     def envia(self,nomearq:str,mode:str):
         msg = Request(2,nomearq,mode) #WRQ
         self.mode = mode 
@@ -46,7 +44,8 @@ class ClientTFTP(poller.Callback):
         self.n = 1
         # cria o arquivo para escrita de bytes
         self.file = open("./"+self.datafile, "rb")
-        size = os.path.getsize(self.file)
+        # size = os.path.getsize(self.file)
+        size = os.path.getsize("./"+self.datafile)
         print(size)
         self.max_n = 1 + size/512 
         self._sock.sendto(msg.serialize(),(self.ip,self.port))        
@@ -60,13 +59,19 @@ class ClientTFTP(poller.Callback):
 
     def handle_rx0(self,msg,timeout:bool=False):
          # n = bloco         
-        msg_size = len( msg ) - 4
-        if msg_size < 512:                      
-            self._state_handler = self.handle_rx2(msg)
-        elif msg_size == 512:           
-            self._state_handler = self.handle_rx1(msg)       
-        else:
-            self._state_handler = self.handle_timeout
+        msg_size = len( msg )
+        if msg_size < 512:    
+            block_n = struct.pack(">H",self.n)
+            ack = Ack(4,block_n)            
+            self._sock.sendto(ack.serialize(),(self.ip,self.port))                 
+            self._state_handler = self.handle_rx2
+        elif msg_size == 512: 
+            block_n = struct.pack(">H",self.n)
+            ack = Ack(4,block_n)            
+            self._sock.sendto(ack.serialize(),(self.ip,self.port))
+            self.n = self.n + 1
+            self._state_handler = self.handle_rx1
+        
 
     def handle_rx1(self,msg,timeout:bool=False):        
         msg_size = len( msg ) - 4
@@ -86,17 +91,19 @@ class ClientTFTP(poller.Callback):
     def handle_rx2(self,msg,timeout:bool=False):     
         if(msg == None):  
             self.file.close() 
-            self._state_handler = self.handle_timeout            
-        else:   
+            print("fechou")          
+        else:  
+            print("abriu")
             msg_size = len( msg )
             if msg_size < 512:
                 block_n = struct.pack(">H",self.n)
                 ack = Ack(4,block_n)
                 self._sock.sendto(ack.serialize(),(self.ip,self.port))
                 self.file.close()
-                self._state_handler = self.handle_timeout
+                
                   
     def handle_tx0(self,msg,timeout:bool = False):
+        # msg = ack
         ack_n = msg[2:4]
         ack_n = int.from_bytes(ack_n)
         if ack_n == 0:
@@ -104,22 +111,22 @@ class ClientTFTP(poller.Callback):
             block_n = struct.pack(">H",self.n)
             data_t = Data(3,block_n,dados)
             self._sock.sendto(data_t.serialize(),(self.ip,self.port))
-            self._state_handler = self.handle_tx1(msg)
-        else:
-            self._state_handler = self.handle_timeout 
+            self._state_handler = self.handle_tx1
+       
         
         
     def handle_tx1(self,msg,timeout:bool = False):
-        ack_n = msg[2:4] #block_N
+        ack_n = msg[2:4]
         ack_n = int.from_bytes(ack_n)
-        if ack_n and self.n < (self.max_n - 1):
+        # if ack_n and self.n < (self.max_n - 1):
+        if ack_n == self.n and self.n < (self.max_n - 1):
             self.n = self.n + 1
             dados = self.file.read(512)
             block_n = struct.pack(">H",self.n)
             data_t = Data(3,block_n,dados)
             self._sock.sendto(data_t.serialize(),(self.ip,self.port))
         elif ack_n and (self.n == (self.max_n - 1)):
-            self._state_handler = self.handle_tx2(msg)
+            self._state_handler = self.handle_tx2
 
         
     def handle_tx2(self,msg,timeout:bool = False):
@@ -129,29 +136,26 @@ class ClientTFTP(poller.Callback):
             block_n = struct.pack(">H",self.n)
             data_t = Data(3,block_n,dados)
             self._sock.sendto(data_t.serialize(),(self.ip,self.port))
-        else:
-            self._state_handler = self.handle_timeout
+        
 
 
     def handle(self):
         # logica do cliente tftp maquina de estados e etc
         # recebe mensagem do socket
         data, addr = self._sock.recvfrom(516) #512 + opcode e blockN     
-        #pegando o opcode para identificar a resposta do serivdor
+        # escrevendo no arquivo        
         opcode = data[0:2]
         opcode = int.from_bytes(opcode, "big") 
-       
-        if opcode == 1: #WRQ                        
-            self._state_handler = self.handle_tx0(msg)     
-        if opcode == 2: #RRQ             
-            self._state_handler = self.handle_rx0(msg)            
+        print(opcode)
+        print(self._state_handler)       
         if opcode == 3:
-            msg = data[4:516]                   
+            msg = data[4:516]     
+            print( len(msg))              
             if msg != None:           
-                self.file.write(msg)          
-                self._state_handler = self.handle_rx0(data)
-            else:
-                self._state_handler = self.handle_timeout       
+                self.file.write(msg)   
+                self._state_handler(msg)       
+                
+                   
         
     def handle_timeout(self): 
         self.disable_timeout()
