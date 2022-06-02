@@ -59,26 +59,26 @@ class ClientTFTP(poller.Callback):
 
     def handle_rx0(self,msg,timeout:bool=False):
          # n = bloco         
-        msg_size = len( msg )
+        msg_size = len( msg ) - 4
         if msg_size < 512:    
             block_n = struct.pack(">H",self.n)
-            ack = Ack(4,block_n)            
+            ack = Ack(4,block_n)
             self._sock.sendto(ack.serialize(),(self.ip,self.port))                 
             self._state_handler = self.handle_rx2
         elif msg_size == 512: 
             block_n = struct.pack(">H",self.n)
-            ack = Ack(4,block_n)            
+            ack = Ack(4,block_n)  
             self._sock.sendto(ack.serialize(),(self.ip,self.port))
             self.n = self.n + 1
             self._state_handler = self.handle_rx1
         
 
     def handle_rx1(self,msg,timeout:bool=False):        
-        msg_size = len( msg ) - 4
+        msg_size = len( msg )
         data_m = int.from_bytes(msg[2:4],"big")
         if msg_size == 512:
             block_n = struct.pack(">H",self.n)
-            ack = Ack(4,block_n)            
+            ack = Ack(4,block_n)  
             self._sock.sendto(ack.serialize(),(self.ip,self.port))
             self.n = self.n + 1
         elif data_m != self.n:
@@ -86,18 +86,19 @@ class ClientTFTP(poller.Callback):
             ack = Ack(4,block_n)
             self._sock.sendto(ack.serialize(),(self.ip,self.port))
         else:
+            block_n = struct.pack(">H",self.n)
+            ack = Ack(4,block_n)  
+            self._sock.sendto(ack.serialize(),(self.ip,self.port))
             self._state_handler = self.handle_rx2 #proximo estado
 
     def handle_rx2(self,msg,timeout:bool=False):     
         if(msg == None):  
-            self.file.close() 
-            print("fechou")          
+            self.file.close()         
         else:  
-            print("abriu")
             msg_size = len( msg )
             if msg_size < 512:
-                block_n = struct.pack(">H",self.n)
-                ack = Ack(4,block_n)
+                block_n = struct.pack(">H",self.n)               
+                ack = Ack(4,block_n) 
                 self._sock.sendto(ack.serialize(),(self.ip,self.port))
                 self.file.close()
                 
@@ -149,11 +150,11 @@ class ClientTFTP(poller.Callback):
         print(opcode)
         print(self._state_handler)       
         if opcode == 3:
-            msg = data[4:516]     
-            print( len(msg))              
-            if msg != None:           
+            msg = data[4:516]                            
+            if msg != None:    
+                print(msg)       
                 self.file.write(msg)   
-                self._state_handler(msg)       
+                self._state_handler(data)       
                 
                    
         
