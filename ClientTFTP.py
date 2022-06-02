@@ -64,8 +64,7 @@ class ClientTFTP(poller.Callback):
             self._state_handler = self.handle_rx2
         elif msg_size == 512:           
             self._state_handler = self.handle_rx1
-        else:
-            self._state_handler = self.handle_timeout
+        
 
     def handle_rx1(self,msg,timeout:bool=False):        
         msg_size = len( msg ) - 4
@@ -84,8 +83,7 @@ class ClientTFTP(poller.Callback):
 
     def handle_rx2(self,msg,timeout:bool=False):     
         if(msg == None):  
-            self.file.close() 
-            self._state_handler = self.handle_timeout            
+            self.file.close()           
         else:   
             msg_size = len( msg )
             if msg_size < 512:
@@ -93,7 +91,7 @@ class ClientTFTP(poller.Callback):
                 ack = Ack(4,block_n)
                 self._sock.sendto(ack.serialize(),(self.ip,self.port))
                 self.file.close()
-                self._state_handler = self.handle_timeout
+                
                   
     def handle_tx0(self,msg,timeout:bool = False):
         # msg = ack
@@ -105,8 +103,7 @@ class ClientTFTP(poller.Callback):
             data_t = Data(3,block_n,dados)
             self._sock.sendto(data_t.serialize(),(self.ip,self.port))
             self._state_handler = self.handle_tx1
-        else:
-            self._state_handler = self.handle_timeout 
+       
         
         
     def handle_tx1(self,msg,timeout:bool = False):
@@ -130,8 +127,7 @@ class ClientTFTP(poller.Callback):
             block_n = struct.pack(">H",self.n)
             data_t = Data(3,block_n,dados)
             self._sock.sendto(data_t.serialize(),(self.ip,self.port))
-        else:
-            self._state_handler = self.handle_timeout
+        
 
 
     def handle(self):
@@ -139,10 +135,11 @@ class ClientTFTP(poller.Callback):
         # recebe mensagem do socket
         data, addr = self._sock.recvfrom(516) #512 + opcode e blockN     
         # escrevendo no arquivo
+        
         opcode = data[0:2]
         opcode = int.from_bytes(opcode, "big") 
        
-        if opcode == 1: #WRQ                        
+        if opcode == 1: #WRQ 
             self._state_handler = self.handle_tx0
         if opcode == 2: #RRQ             
             self._state_handler = self.handle_rx0
@@ -151,8 +148,7 @@ class ClientTFTP(poller.Callback):
             if msg != None:           
                 self.file.write(msg)          
                 self._state_handler = self.handle_rx0
-            else:
-                self._state_handler = self.handle_timeout       
+                   
         
     def handle_timeout(self): 
         self.disable_timeout()
