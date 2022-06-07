@@ -1,8 +1,9 @@
 from tftp_client.message import Message
 
+# opcode 1 = RRQ
+# opcode 2 = WRQ
 
-#opcode 1 = RRQ
-#opcode 2 = WRQ
+# inicio da classe request herdando da classe mensagem
 class Request(Message):
     def __init__(self,opcode,filename,mode):
         super().__init__(opcode)

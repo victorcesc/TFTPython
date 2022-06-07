@@ -1,15 +1,14 @@
 import sys
 from tftp_client.message import Message
 
-
-
+# inicio da classe data herdando da classe mensagem
 class Data(Message):
     def __init__(self,opcode,block,data):
         super().__init__(opcode)
         self.block = block
         self.data = data
 
-#serializa os dados do objeto   
+# serializa os dados do objeto
     def serialize(self):
         serial = bytearray()
         serial.append(0)
